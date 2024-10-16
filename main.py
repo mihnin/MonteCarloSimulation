@@ -204,13 +204,19 @@ def main():
             # Run sensitivity analysis if selected
             if run_sensitivity:
                 st.subheader("Sensitivity Analysis Results")
-                base_result, sensitivity_results = perform_sensitivity_analysis(df[target_column] if not use_multi_var else df[target_columns], num_simulations, confidence_level, {
-                    "trend": trend_type,
-                    "seasonality": seasonality,
-                    "custom_distribution": custom_distribution,
-                    "distribution_params": distribution_params,
-                    "external_factors": external_factors
-                }, sensitivity_params)
+                base_result, sensitivity_results = perform_sensitivity_analysis(
+                    df[target_column] if not use_multi_var else df[target_columns],
+                    num_simulations,
+                    confidence_level,
+                    {
+                        'trend': trend_type,
+                        'seasonality': seasonality,
+                        'custom_distribution': custom_distribution,
+                        'distribution_params': distribution_params,
+                        'external_factors': external_factors
+                    },
+                    sensitivity_params
+                )
 
                 fig_sensitivity = plot_sensitivity_analysis(sensitivity_results)
                 st.plotly_chart(fig_sensitivity, use_container_width=True)

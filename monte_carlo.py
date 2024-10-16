@@ -121,16 +121,16 @@ def run_multi_variable_simulation(data, num_simulations, confidence_level, custo
 
     return results
 
-def perform_sensitivity_analysis(data, num_simulations, confidence_level, parameters, ranges):
-    base_result = run_monte_carlo_simulation(data, num_simulations, confidence_level)
+def perform_sensitivity_analysis(data, num_simulations, confidence_level, base_params, sensitivity_params):
+    base_result = run_monte_carlo_simulation(data, num_simulations, confidence_level, **base_params)
     sensitivity_results = {}
 
-    for param, range_values in ranges.items():
+    for param, range_values in sensitivity_params.items():
         param_results = []
         for value in range_values:
-            params = parameters.copy()
-            params[param] = value
-            result = run_monte_carlo_simulation(data, num_simulations, confidence_level, **params)
+            current_params = base_params.copy()
+            current_params[param] = value
+            result = run_monte_carlo_simulation(data, num_simulations, confidence_level, **current_params)
             param_results.append((value, result['mean']))
         sensitivity_results[param] = param_results
 
