@@ -40,13 +40,12 @@ def run_monte_carlo_simulation(data, num_simulations, confidence_level, trend=No
     return results
 
 def apply_trend(data, trend):
+    x = np.arange(len(data))
     if trend == 'linear':
-        x = np.arange(len(data))
         slope, intercept, _, _, _ = stats.linregress(x, data)
         trend_line = slope * x + intercept
         return data + trend_line
     elif trend == 'exponential':
-        x = np.arange(len(data))
         _, intercept, _, _, _ = stats.linregress(x, np.log(data))
         trend_line = np.exp(intercept) * np.exp(0.1 * x)  # Assuming 10% growth rate
         return data * trend_line
@@ -129,7 +128,8 @@ def perform_sensitivity_analysis(data, num_simulations, confidence_level, base_p
         param_results = []
         for value in range_values:
             current_params = base_params.copy()
-            current_params[param] = value
+            if param in current_params:
+                current_params[param] = value
             result = run_monte_carlo_simulation(data, num_simulations, confidence_level, **current_params)
             param_results.append((value, result['mean']))
         sensitivity_results[param] = param_results

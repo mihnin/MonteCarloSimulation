@@ -204,17 +204,18 @@ def main():
             # Run sensitivity analysis if selected
             if run_sensitivity:
                 st.subheader("Sensitivity Analysis Results")
+                base_params = {
+                    'trend': trend_type,
+                    'seasonality': seasonality,
+                    'custom_distribution': custom_distribution,
+                    'distribution_params': distribution_params,
+                    'external_factors': external_factors
+                }
                 base_result, sensitivity_results = perform_sensitivity_analysis(
                     df[target_column] if not use_multi_var else df[target_columns],
                     num_simulations,
                     confidence_level,
-                    {
-                        'trend': trend_type,
-                        'seasonality': seasonality,
-                        'custom_distribution': custom_distribution,
-                        'distribution_params': distribution_params,
-                        'external_factors': external_factors
-                    },
+                    base_params,
                     sensitivity_params
                 )
 
