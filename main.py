@@ -6,7 +6,7 @@ import numpy as np
 import requests
 from data_processing import load_data, preprocess_data
 from monte_carlo import run_monte_carlo_simulation, perform_sensitivity_analysis
-from visualization import plot_simulation_results, plot_sensitivity_analysis
+from visualization import plot_simulation_results, plot_sensitivity_analysis, plot_correlation_heatmap, plot_3d_scatter
 from export_utils import export_results_to_excel
 
 st.set_page_config(page_title="Business Data Analysis", page_icon="assets/favicon.png", layout="wide")
@@ -191,6 +191,22 @@ def main():
                 st.subheader("Multi-variable Simulation Scatter Matrix")
                 scatter_matrix_fig = plot_scatter_matrix(results)
                 st.plotly_chart(scatter_matrix_fig, use_container_width=True)
+
+                # Add correlation heatmap
+                st.subheader("Correlation Heatmap")
+                heatmap_fig = plot_correlation_heatmap(correlation_matrix)
+                st.plotly_chart(heatmap_fig, use_container_width=True)
+
+                # Add 3D scatter plot if there are at least 3 variables
+                if len(target_columns) >= 3:
+                    st.subheader("3D Scatter Plot")
+                    x_col = st.selectbox("Select X-axis variable", target_columns)
+                    y_col = st.selectbox("Select Y-axis variable", [col for col in target_columns if col != x_col])
+                    z_col = st.selectbox("Select Z-axis variable", [col for col in target_columns if col not in [x_col, y_col]])
+                    
+                    scatter_3d_data = pd.DataFrame({col: results[col]['simulated_data'] for col in [x_col, y_col, z_col]})
+                    scatter_3d_fig = plot_3d_scatter(scatter_3d_data, x_col, y_col, z_col)
+                    st.plotly_chart(scatter_3d_fig, use_container_width=True)
             else:
                 st.write(f"Mean: {results['mean']:.2f}")
                 st.write(f"Median: {results['median']:.2f}")

@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 import pandas as pd
 
@@ -20,7 +21,8 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
         x=simulated_data,
         name="Simulation Results",
         nbinsx=50,
-        hoverinfo=['y', 'text'],
+        hoverinfo='y+text',
+        hovertext=[f'Value: {x:.2f}' for x in simulated_data],
         hoverlabel=dict(namelength=-1)
     ))
 
@@ -45,9 +47,9 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
         rangeslider_visible=True,
         rangeselector=dict(
             buttons=list([
-                dict(count=1, label="1y", step="year", stepmode="backward"),
-                dict(count=3, label="3y", step="year", stepmode="backward"),
-                dict(count=5, label="5y", step="year", stepmode="backward"),
+                dict(count=1, label="1%", step="percent", stepmode="backward"),
+                dict(count=5, label="5%", step="percent", stepmode="backward"),
+                dict(count=10, label="10%", step="percent", stepmode="backward"),
                 dict(step="all")
             ])
         )
@@ -66,6 +68,7 @@ def plot_line(simulated_data, ci_lower, ci_upper, target_column):
         mode='lines',
         name="Simulation Results",
         hoverinfo='x+y',
+        hovertext=[f'Run: {i+1}<br>Value: {y:.2f}' for i, y in enumerate(simulated_data)],
         hoverlabel=dict(namelength=-1)
     ))
 
@@ -111,6 +114,7 @@ def plot_box(simulated_data, ci_lower, ci_upper, target_column):
         jitter=0.3,
         pointpos=-1.8,
         hoverinfo='y',
+        hovertext=[f'Value: {y:.2f}' for y in simulated_data],
         hoverlabel=dict(namelength=-1)
     ))
 
@@ -141,7 +145,8 @@ def plot_sensitivity_analysis(sensitivity_results):
             y=y_values,
             mode='lines+markers',
             name=param,
-            hoverinfo='x+y',
+            hoverinfo='x+y+text',
+            hovertext=[f'{param}: {x:.2f}<br>Mean: {y:.2f}' for x, y in results],
             hoverlabel=dict(namelength=-1)
         ))
 
@@ -150,6 +155,67 @@ def plot_sensitivity_analysis(sensitivity_results):
         xaxis_title="Parameter Value",
         yaxis_title="Simulation Mean",
         showlegend=True,
+        hovermode='closest'
+    )
+
+    # Add range slider and selector
+    fig.update_xaxes(
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1%", step="percent", stepmode="backward"),
+                dict(count=5, label="5%", step="percent", stepmode="backward"),
+                dict(count=10, label="10%", step="percent", stepmode="backward"),
+                dict(step="all")
+            ])
+        )
+    )
+
+    return fig
+
+def plot_correlation_heatmap(correlation_matrix):
+    fig = go.Figure(data=go.Heatmap(
+        z=correlation_matrix.values,
+        x=correlation_matrix.columns,
+        y=correlation_matrix.index,
+        hoverongaps=False,
+        hoverinfo='x+y+z',
+        colorscale='RdBu',
+        zmin=-1,
+        zmax=1
+    ))
+
+    fig.update_layout(
+        title="Correlation Heatmap",
+        xaxis_title="Variables",
+        yaxis_title="Variables",
+    )
+
+    return fig
+
+def plot_3d_scatter(data, x_col, y_col, z_col):
+    fig = go.Figure(data=[go.Scatter3d(
+        x=data[x_col],
+        y=data[y_col],
+        z=data[z_col],
+        mode='markers',
+        marker=dict(
+            size=5,
+            color=data[z_col],
+            colorscale='Viridis',
+            opacity=0.8
+        ),
+        hoverinfo='text',
+        hovertext=[f'{x_col}: {x:.2f}<br>{y_col}: {y:.2f}<br>{z_col}: {z:.2f}' for x, y, z in zip(data[x_col], data[y_col], data[z_col])]
+    )])
+
+    fig.update_layout(
+        title=f"3D Scatter Plot: {x_col} vs {y_col} vs {z_col}",
+        scene=dict(
+            xaxis_title=x_col,
+            yaxis_title=y_col,
+            zaxis_title=z_col
+        ),
         hovermode='closest'
     )
 
