@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 import requests
 from data_processing import load_data, preprocess_data
@@ -20,6 +21,12 @@ def fetch_api_data(api_url):
     except requests.RequestException as e:
         st.error(f"Error fetching data from API: {str(e)}")
         return None
+
+def plot_scatter_matrix(results):
+    df = pd.DataFrame({k: v['simulated_data'] for k, v in results.items()})
+    fig = px.scatter_matrix(df, title="Multi-variable Simulation Results")
+    fig.update_traces(diagonal_visible=False)
+    return fig
 
 def main():
     st.title("Business Data Analysis with Monte Carlo Simulation")
@@ -172,6 +179,11 @@ def main():
                     # Visualize results
                     fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type=graph_type)
                     st.plotly_chart(fig, use_container_width=True)
+
+                # Add scatter matrix plot for multi-variable simulations
+                st.subheader("Multi-variable Simulation Scatter Matrix")
+                scatter_matrix_fig = plot_scatter_matrix(results)
+                st.plotly_chart(scatter_matrix_fig, use_container_width=True)
             else:
                 st.write(f"Mean: {results['mean']:.2f}")
                 st.write(f"Median: {results['median']:.2f}")
