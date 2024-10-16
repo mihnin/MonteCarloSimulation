@@ -68,6 +68,9 @@ def generate_custom_distribution(distribution, mean, std, size):
 def run_multi_variable_simulation(data, num_simulations, confidence_level, custom_distribution=None, correlation_matrix=None):
     if correlation_matrix is None:
         correlation_matrix = data.corr()
+    else:
+        # Convert correlation_matrix to float64
+        correlation_matrix = correlation_matrix.astype(np.float64)
     
     means = data.mean()
     stds = data.std()
