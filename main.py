@@ -211,8 +211,9 @@ def main():
                     'distribution_params': distribution_params,
                     'external_factors': external_factors
                 }
+                sensitivity_data = df[target_column] if not use_multi_var else df[target_columns].iloc[:, 0]
                 base_result, sensitivity_results = perform_sensitivity_analysis(
-                    df[target_column] if not use_multi_var else df[target_columns],
+                    sensitivity_data,
                     num_simulations,
                     confidence_level,
                     base_params,

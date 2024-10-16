@@ -121,6 +121,9 @@ def run_multi_variable_simulation(data, num_simulations, confidence_level, custo
     return results
 
 def perform_sensitivity_analysis(data, num_simulations, confidence_level, base_params, sensitivity_params):
+    if isinstance(data, pd.DataFrame):
+        data = data.iloc[:, 0]  # Use the first column for sensitivity analysis
+    
     base_result = run_monte_carlo_simulation(data, num_simulations, confidence_level, **base_params)
     sensitivity_results = {}
 
