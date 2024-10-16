@@ -47,9 +47,9 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
         rangeslider_visible=True,
         rangeselector=dict(
             buttons=list([
-                dict(count=1, label="1%", step="percent", stepmode="backward"),
-                dict(count=5, label="5%", step="percent", stepmode="backward"),
-                dict(count=10, label="10%", step="percent", stepmode="backward"),
+                dict(count=1, label="1%", step="all", stepmode="backward"),
+                dict(count=5, label="5%", step="all", stepmode="backward"),
+                dict(count=10, label="10%", step="all", stepmode="backward"),
                 dict(step="all")
             ])
         )

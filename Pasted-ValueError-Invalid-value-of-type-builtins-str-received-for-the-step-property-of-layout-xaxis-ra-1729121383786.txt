@@ -1,0 +1,48 @@
+ValueError: Invalid value of type 'builtins.str' received for the 'step' property of layout.xaxis.rangeselector.button Received value: 'percent' The 'step' property is an enumeration that may be specified as: - One of the following enumeration values: ['month', 'year', 'day', 'hour', 'minute', 'second', 'all']
+Traceback:
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 88, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 579, in code_to_exec
+    exec(code, module.__dict__)
+File "/home/runner/MonteCarloBusinessAnalyzer/main.py", line 255, in <module>
+    main()
+File "/home/runner/MonteCarloBusinessAnalyzer/main.py", line 187, in main
+    fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type=graph_type)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/visualization.py", line 8, in plot_simulation_results
+    return plot_histogram(simulated_data, ci_lower, ci_upper, target_column)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/visualization.py", line 46, in plot_histogram
+    fig.update_xaxes(
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/graph_objs/_figure.py", line 23815, in update_xaxes
+    obj.update(patch, overwrite=overwrite, **kwargs)
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 5131, in update
+    BaseFigure._perform_update(self, kwargs, overwrite=overwrite)
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 3913, in _perform_update
+    BaseFigure._perform_update(plotly_obj[key], val)
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 3931, in _perform_update
+    plotly_obj[key] = val
+    ~~~~~~~~~~^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 4864, in __setitem__
+    self._set_array_prop(prop, value)
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 5345, in _set_array_prop
+    val = validator.validate_coerce(val, skip_invalid=self._skip_invalid)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/_plotly_utils/basevalidators.py", line 2604, in validate_coerce
+    res.append(self.data_class(v_el, skip_invalid=skip_invalid))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/graph_objs/layout/xaxis/rangeselector/_button.py", line 350, in __init__
+    self["step"] = _v
+    ~~~~^^^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 4868, in __setitem__
+    self._set_prop(prop, value)
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 5212, in _set_prop
+    raise err
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/plotly/basedatatypes.py", line 5207, in _set_prop
+    val = validator.validate_coerce(val)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/_plotly_utils/basevalidators.py", line 619, in validate_coerce
+    self.raise_invalid_val(v)
+File "/home/runner/MonteCarloBusinessAnalyzer/.pythonlibs/lib/python3.11/site-packages/_plotly_utils/basevalidators.py", line 296, in raise_invalid_val
+    raise ValueError(
