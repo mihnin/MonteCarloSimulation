@@ -32,7 +32,15 @@ def main():
 
         # Monte Carlo simulation configuration
         st.subheader("Monte Carlo Simulation Configuration")
-        target_column = st.selectbox("Select target column for simulation", numeric_columns)
+        
+        # Multi-variable simulation option
+        use_multi_var = st.checkbox("Run multi-variable simulation")
+        
+        if use_multi_var:
+            target_columns = st.multiselect("Select target columns for simulation", numeric_columns, default=numeric_columns)
+        else:
+            target_column = st.selectbox("Select target column for simulation", numeric_columns)
+        
         num_simulations = st.slider("Number of simulations", min_value=100, max_value=10000, value=1000, step=100)
         confidence_level = st.slider("Confidence level (%)", min_value=80, max_value=99, value=95, step=1)
 
@@ -49,7 +57,23 @@ def main():
             seasons = st.number_input("Number of seasons", min_value=2, max_value=12, value=4)
             seasonality = [st.number_input(f"Season {i+1} factor", min_value=0.1, max_value=2.0, value=1.0, step=0.1) for i in range(seasons)]
 
-        use_multi_var = st.checkbox("Run multi-variable simulation")
+        # Custom distribution selection
+        custom_distribution = st.selectbox("Select distribution", ["normal", "lognormal", "uniform"])
+
+        # Correlation matrix
+        if use_multi_var:
+            st.subheader("Correlation Matrix")
+            correlation_matrix = pd.DataFrame(index=target_columns, columns=target_columns)
+            for i, col1 in enumerate(target_columns):
+                for j, col2 in enumerate(target_columns):
+                    if i <= j:
+                        if i == j:
+                            correlation_matrix.loc[col1, col2] = 1.0
+                        else:
+                            correlation = st.number_input(f"Correlation between {col1} and {col2}", min_value=-1.0, max_value=1.0, value=0.0, step=0.1)
+                            correlation_matrix.loc[col1, col2] = correlation
+                            correlation_matrix.loc[col2, col1] = correlation
+            st.write(correlation_matrix)
 
         # Graph type selection
         graph_type = st.selectbox("Select graph type", ["histogram", "line", "box"])
@@ -57,9 +81,9 @@ def main():
         if st.button("Run Simulation"):
             # Run Monte Carlo simulation
             if use_multi_var:
-                results = run_monte_carlo_simulation(df[numeric_columns], num_simulations, confidence_level, multi_var=True)
+                results = run_monte_carlo_simulation(df[target_columns], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, multi_var=True, custom_distribution=custom_distribution, correlation_matrix=correlation_matrix)
             else:
-                results = run_monte_carlo_simulation(df[target_column], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality)
+                results = run_monte_carlo_simulation(df[target_column], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, custom_distribution=custom_distribution)
 
             # Display results
             st.subheader("Simulation Results")

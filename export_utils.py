@@ -3,38 +3,48 @@ from io import BytesIO
 
 def export_results_to_excel(results):
     output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='openpyxl')
-
-    if isinstance(results, dict) and 'simulated_data' in results:
-        # Single variable simulation
-        df = pd.DataFrame({
-            'Simulated Data': results['simulated_data'],
-            'Statistics': [
-                f"Mean: {results['mean']:.2f}",
-                f"Median: {results['median']:.2f}",
-                f"Standard Deviation: {results['std']:.2f}",
-                f"CI Lower: {results['ci_lower']:.2f}",
-                f"CI Upper: {results['ci_upper']:.2f}"
-            ]
-        })
-        df.to_excel(writer, sheet_name='Simulation Results', index=False)
-    elif isinstance(results, dict) and all(isinstance(v, dict) for v in results.values()):
-        # Multi-variable simulation
-        for variable, var_results in results.items():
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        if isinstance(results, dict) and 'simulated_data' in results:
+            # Single variable simulation
             df = pd.DataFrame({
-                'Simulated Data': var_results['simulated_data'],
-                'Statistics': [
-                    f"Mean: {var_results['mean']:.2f}",
-                    f"Median: {var_results['median']:.2f}",
-                    f"Standard Deviation: {var_results['std']:.2f}",
-                    f"CI Lower: {var_results['ci_lower']:.2f}",
-                    f"CI Upper: {var_results['ci_upper']:.2f}"
+                'Simulated Data': results['simulated_data']
+            })
+            df.to_excel(writer, sheet_name='Simulation Results', index=False)
+            
+            stats_df = pd.DataFrame({
+                'Statistic': ['Mean', 'Median', 'Standard Deviation', 'CI Lower', 'CI Upper'],
+                'Value': [
+                    results['mean'],
+                    results['median'],
+                    results['std'],
+                    results['ci_lower'],
+                    results['ci_upper']
                 ]
             })
-            df.to_excel(writer, sheet_name=f'{variable} Results', index=False)
-    else:
-        raise ValueError("Invalid results format")
+            stats_df.to_excel(writer, sheet_name='Statistics', index=False)
+        
+        elif isinstance(results, dict) and all(isinstance(v, dict) for v in results.values()):
+            # Multi-variable simulation
+            for variable, var_results in results.items():
+                df = pd.DataFrame({
+                    'Simulated Data': var_results['simulated_data']
+                })
+                df.to_excel(writer, sheet_name=f'{variable} Results', index=False)
+                
+                stats_df = pd.DataFrame({
+                    'Statistic': ['Mean', 'Median', 'Standard Deviation', 'CI Lower', 'CI Upper'],
+                    'Value': [
+                        var_results['mean'],
+                        var_results['median'],
+                        var_results['std'],
+                        var_results['ci_lower'],
+                        var_results['ci_upper']
+                    ]
+                })
+                stats_df.to_excel(writer, sheet_name=f'{variable} Statistics', index=False)
+        
+        else:
+            raise ValueError("Invalid results format")
 
-    writer.save()
     output.seek(0)
     return output
