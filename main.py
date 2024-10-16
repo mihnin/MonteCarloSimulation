@@ -8,6 +8,7 @@ from data_processing import load_data, preprocess_data
 from monte_carlo import run_monte_carlo_simulation, perform_sensitivity_analysis
 from visualization import plot_simulation_results, plot_sensitivity_analysis, plot_correlation_heatmap, plot_3d_scatter
 from export_utils import export_results_to_excel
+from database import save_analysis, get_all_analyses, get_analysis
 
 st.set_page_config(page_title="Business Data Analysis", page_icon="assets/favicon.png", layout="wide")
 
@@ -31,6 +32,46 @@ def plot_scatter_matrix(results):
 def main():
     st.title("Business Data Analysis with Monte Carlo Simulation")
 
+    # Test save and retrieve functionality
+    st.subheader("Test Save and Retrieve Functionality")
+    if st.button("Run Test"):
+        # Save a test analysis
+        test_config = {
+            'data_source': 'test',
+            'use_multi_var': False,
+            'target_column': 'Sales',
+            'num_simulations': 1000,
+            'confidence_level': 95
+        }
+        test_results = {
+            'mean': 1000,
+            'median': 950,
+            'std': 100,
+            'ci_lower': 800,
+            'ci_upper': 1200,
+            'simulated_data': list(np.random.normal(1000, 100, 1000))
+        }
+        save_analysis("Test Analysis", test_config, test_results)
+        st.success("Test analysis saved successfully!")
+
+        # Retrieve and display the saved analysis
+        analyses = get_all_analyses()
+        if analyses:
+            test_analysis = get_analysis(analyses[-1][0])  # Get the last saved analysis
+            st.write("Retrieved Test Analysis:")
+            st.json(test_analysis)
+        else:
+            st.error("Failed to retrieve the saved analysis.")
+
+    # Sidebar for navigation
+    page = st.sidebar.selectbox("Choose a page", ["Run New Analysis", "View Saved Analyses"])
+
+    if page == "Run New Analysis":
+        run_new_analysis()
+    else:
+        view_saved_analyses()
+
+def run_new_analysis():
     # Data source selection
     data_source = st.radio("Select data source", ["Upload File", "API", "Use Test Data"])
 
@@ -239,6 +280,29 @@ def main():
                 fig_sensitivity = plot_sensitivity_analysis(sensitivity_results)
                 st.plotly_chart(fig_sensitivity, use_container_width=True)
 
+            # Save analysis option
+            st.subheader("Save Analysis")
+            analysis_name = st.text_input("Enter a name for this analysis")
+            if st.button("Save Analysis"):
+                if analysis_name:
+                    config = {
+                        'data_source': data_source,
+                        'use_multi_var': use_multi_var,
+                        'target_columns' if use_multi_var else 'target_column': target_columns if use_multi_var else target_column,
+                        'num_simulations': num_simulations,
+                        'confidence_level': confidence_level,
+                        'trend_type': trend_type,
+                        'seasonality': seasonality,
+                        'custom_distribution': custom_distribution,
+                        'distribution_params': distribution_params,
+                        'external_factors': external_factors,
+                        'sensitivity_params': sensitivity_params
+                    }
+                    save_analysis(analysis_name, config, results)
+                    st.success(f"Analysis '{analysis_name}' saved successfully!")
+                else:
+                    st.warning("Please enter a name for the analysis before saving.")
+
             # Export results button
             excel_file = export_results_to_excel(results)
             st.download_button(
@@ -247,6 +311,34 @@ def main():
                 file_name="simulation_results.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
+
+def view_saved_analyses():
+    st.subheader("Saved Analyses")
+    analyses = get_all_analyses()
+    if analyses:
+        selected_analysis = st.selectbox("Select an analysis to view", analyses, format_func=lambda x: f"{x[1]} ({x[2]})")
+        if selected_analysis:
+            analysis = get_analysis(selected_analysis[0])
+            if analysis:
+                st.write(f"Analysis Name: {analysis['name']}")
+                st.write(f"Date: {analysis['date']}")
+                st.subheader("Configuration")
+                st.json(analysis['config'])
+                st.subheader("Results")
+                st.json(analysis['results'])
+
+                # Visualize results
+                if analysis['config']['use_multi_var']:
+                    for col, col_results in analysis['results'].items():
+                        st.write(f"Results for {col}:")
+                        fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type='histogram')
+                        st.plotly_chart(fig, use_container_width=True)
+                else:
+                    target_column = analysis['config']['target_column']
+                    fig = plot_simulation_results(analysis['results']['simulated_data'], analysis['results']['ci_lower'], analysis['results']['ci_upper'], target_column, plot_type='histogram')
+                    st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No saved analyses found.")
 
     st.sidebar.title("About")
     st.sidebar.info("This application performs Monte Carlo simulations on uploaded business data or data fetched from an API to analyze and visualize potential outcomes.")
