@@ -20,7 +20,7 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
         x=simulated_data,
         name="Simulation Results",
         nbinsx=50,
-        hoverinfo='y+bin',
+        hoverinfo=['y', 'text'],
         hoverlabel=dict(namelength=-1)
     ))
 
