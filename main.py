@@ -32,7 +32,7 @@ def main():
     st.title("Business Data Analysis with Monte Carlo Simulation")
 
     # Data source selection
-    data_source = st.radio("Select data source", ["Upload File", "API"])
+    data_source = st.radio("Select data source", ["Upload File", "API", "Use Test Data"])
 
     df = None
     if data_source == "Upload File":
@@ -49,16 +49,14 @@ def main():
                     st.write(df.head())
                 else:
                     st.error("Failed to load the uploaded file. Please check the file format and try again.")
-            except Exception as e:
-                st.error(f"An error occurred while loading the file: {str(e)}")
+            except ValueError as e:
+                st.error(str(e))
+                st.info("Using test data as a fallback. You can try uploading your file again.")
+                df = pd.read_csv('test_data.csv', encoding='utf-8-sig')
         else:
-            # Load test data if no file is uploaded
-            try:
-                df = pd.read_csv('test_data.csv')
-                st.info("Using test data. You can upload your own file above.")
-            except Exception as e:
-                st.error(f"Failed to load test data: {str(e)}")
-    else:
+            st.info("No file uploaded. Using test data.")
+            df = pd.read_csv('test_data.csv', encoding='utf-8-sig')
+    elif data_source == "API":
         # API data ingestion
         api_url = st.text_input("Enter API URL")
         if api_url:
@@ -67,6 +65,15 @@ def main():
                 st.success("Data fetched successfully from API!")
                 st.subheader("Data Preview")
                 st.write(df.head())
+    else:
+        # Use test data
+        try:
+            df = pd.read_csv('test_data.csv', encoding='utf-8-sig')
+            st.info("Using test data.")
+            st.subheader("Data Preview")
+            st.write(df.head())
+        except Exception as e:
+            st.error(f"Failed to load test data: {str(e)}")
 
     if df is not None:
         # Preprocess data
