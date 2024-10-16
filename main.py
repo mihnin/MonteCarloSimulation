@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from data_processing import load_data, preprocess_data
 from monte_carlo import run_monte_carlo_simulation
 from visualization import plot_simulation_results
+from export_utils import export_results_to_excel
 
 st.set_page_config(page_title="Business Data Analysis", page_icon="assets/favicon.png", layout="wide")
 
@@ -50,6 +51,9 @@ def main():
 
         use_multi_var = st.checkbox("Run multi-variable simulation")
 
+        # Graph type selection
+        graph_type = st.selectbox("Select graph type", ["histogram", "line", "box"])
+
         if st.button("Run Simulation"):
             # Run Monte Carlo simulation
             if use_multi_var:
@@ -68,7 +72,7 @@ def main():
                     st.write(f"{confidence_level}% Confidence Interval: ({col_results['ci_lower']:.2f}, {col_results['ci_upper']:.2f})")
                     
                     # Visualize results
-                    fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col)
+                    fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type=graph_type)
                     st.plotly_chart(fig, use_container_width=True)
             else:
                 st.write(f"Mean: {results['mean']:.2f}")
@@ -77,8 +81,17 @@ def main():
                 st.write(f"{confidence_level}% Confidence Interval: ({results['ci_lower']:.2f}, {results['ci_upper']:.2f})")
 
                 # Visualize results
-                fig = plot_simulation_results(results['simulated_data'], results['ci_lower'], results['ci_upper'], target_column)
+                fig = plot_simulation_results(results['simulated_data'], results['ci_lower'], results['ci_upper'], target_column, plot_type=graph_type)
                 st.plotly_chart(fig, use_container_width=True)
+
+            # Export results button
+            excel_file = export_results_to_excel(results)
+            st.download_button(
+                label="Export Results to Excel",
+                data=excel_file,
+                file_name="simulation_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
     st.sidebar.title("About")
     st.sidebar.info("This application performs Monte Carlo simulations on uploaded business data to analyze and visualize potential outcomes.")
