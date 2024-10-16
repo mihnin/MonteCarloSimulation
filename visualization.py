@@ -39,7 +39,7 @@ def plot_line(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
     # Line plot of simulated data
-    x = range(len(simulated_data))
+    x = list(range(len(simulated_data)))
     fig.add_trace(go.Scatter(x=x, y=simulated_data, mode='lines', name="Simulation Results"))
 
     # Confidence interval
@@ -77,6 +77,22 @@ def plot_box(simulated_data, ci_lower, ci_upper, target_column):
         title=f"Monte Carlo Simulation Results for {target_column} (Box Plot)",
         yaxis_title=target_column,
         showlegend=False
+    )
+
+    return fig
+
+def plot_sensitivity_analysis(sensitivity_results):
+    fig = go.Figure()
+
+    for param, results in sensitivity_results.items():
+        x_values, y_values = zip(*results)
+        fig.add_trace(go.Scatter(x=x_values, y=y_values, mode='lines+markers', name=param))
+
+    fig.update_layout(
+        title="Sensitivity Analysis",
+        xaxis_title="Parameter Value",
+        yaxis_title="Simulation Mean",
+        showlegend=True
     )
 
     return fig

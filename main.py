@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from data_processing import load_data, preprocess_data
-from monte_carlo import run_monte_carlo_simulation
-from visualization import plot_simulation_results
+from monte_carlo import run_monte_carlo_simulation, perform_sensitivity_analysis
+from visualization import plot_simulation_results, plot_sensitivity_analysis
 from export_utils import export_results_to_excel
 
 st.set_page_config(page_title="Business Data Analysis", page_icon="assets/favicon.png", layout="wide")
@@ -59,6 +59,32 @@ def main():
 
         # Custom distribution selection
         custom_distribution = st.selectbox("Select distribution", ["normal", "lognormal", "uniform"])
+        
+        # Distribution parameters
+        st.subheader("Distribution Parameters")
+        if custom_distribution == "normal":
+            loc = st.number_input("Location (mean)", value=0.0)
+            scale = st.number_input("Scale (standard deviation)", value=1.0, min_value=0.1)
+            distribution_params = {"loc": loc, "scale": scale}
+        elif custom_distribution == "lognormal":
+            mean = st.number_input("Mean of log", value=0.0)
+            sigma = st.number_input("Standard deviation of log", value=1.0, min_value=0.1)
+            distribution_params = {"mean": mean, "sigma": sigma}
+        else:  # uniform
+            low = st.number_input("Lower bound", value=0.0)
+            high = st.number_input("Upper bound", value=1.0)
+            distribution_params = {"low": low, "high": high}
+
+        # External factors
+        st.subheader("External Factors")
+        use_external_factors = st.checkbox("Apply external factors")
+        external_factors = {}
+        if use_external_factors:
+            num_factors = st.number_input("Number of external factors", min_value=1, max_value=5, value=1)
+            for i in range(num_factors):
+                factor_name = st.text_input(f"Factor {i+1} name", value=f"Factor {i+1}")
+                factor_impact = st.slider(f"Factor {i+1} impact", min_value=0.5, max_value=1.5, value=1.0, step=0.1)
+                external_factors[factor_name] = factor_impact
 
         # Correlation matrix
         if use_multi_var:
@@ -75,15 +101,28 @@ def main():
                             correlation_matrix.loc[col2, col1] = correlation
             st.write(correlation_matrix)
 
+        # Sensitivity analysis
+        st.subheader("Sensitivity Analysis")
+        run_sensitivity = st.checkbox("Run sensitivity analysis")
+        sensitivity_params = {}
+        if run_sensitivity:
+            num_params = st.number_input("Number of parameters for sensitivity analysis", min_value=1, max_value=5, value=1)
+            for i in range(num_params):
+                param_name = st.text_input(f"Parameter {i+1} name", value=f"Param {i+1}")
+                param_min = st.number_input(f"{param_name} minimum value", value=0.5)
+                param_max = st.number_input(f"{param_name} maximum value", value=1.5)
+                param_steps = st.number_input(f"{param_name} number of steps", min_value=2, max_value=10, value=5)
+                sensitivity_params[param_name] = np.linspace(param_min, param_max, param_steps)
+
         # Graph type selection
         graph_type = st.selectbox("Select graph type", ["histogram", "line", "box"])
 
         if st.button("Run Simulation"):
             # Run Monte Carlo simulation
             if use_multi_var:
-                results = run_monte_carlo_simulation(df[target_columns], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, multi_var=True, custom_distribution=custom_distribution, correlation_matrix=correlation_matrix)
+                results = run_monte_carlo_simulation(df[target_columns], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, multi_var=True, custom_distribution=custom_distribution, correlation_matrix=correlation_matrix, distribution_params=distribution_params, external_factors=external_factors)
             else:
-                results = run_monte_carlo_simulation(df[target_column], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, custom_distribution=custom_distribution)
+                results = run_monte_carlo_simulation(df[target_column], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, custom_distribution=custom_distribution, distribution_params=distribution_params, external_factors=external_factors)
 
             # Display results
             st.subheader("Simulation Results")
@@ -107,6 +146,20 @@ def main():
                 # Visualize results
                 fig = plot_simulation_results(results['simulated_data'], results['ci_lower'], results['ci_upper'], target_column, plot_type=graph_type)
                 st.plotly_chart(fig, use_container_width=True)
+
+            # Run sensitivity analysis if selected
+            if run_sensitivity:
+                st.subheader("Sensitivity Analysis Results")
+                base_result, sensitivity_results = perform_sensitivity_analysis(df[target_column] if not use_multi_var else df[target_columns], num_simulations, confidence_level, {
+                    "trend": trend_type,
+                    "seasonality": seasonality,
+                    "custom_distribution": custom_distribution,
+                    "distribution_params": distribution_params,
+                    "external_factors": external_factors
+                }, sensitivity_params)
+
+                fig_sensitivity = plot_sensitivity_analysis(sensitivity_results)
+                st.plotly_chart(fig_sensitivity, use_container_width=True)
 
             # Export results button
             excel_file = export_results_to_excel(results)

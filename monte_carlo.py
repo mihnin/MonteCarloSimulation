@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-def run_monte_carlo_simulation(data, num_simulations, confidence_level, trend=None, seasonality=None, multi_var=False, custom_distribution=None, correlation_matrix=None):
+def run_monte_carlo_simulation(data, num_simulations, confidence_level, trend=None, seasonality=None, multi_var=False, custom_distribution=None, correlation_matrix=None, distribution_params=None, external_factors=None):
     if multi_var:
-        return run_multi_variable_simulation(data, num_simulations, confidence_level, custom_distribution, correlation_matrix)
+        return run_multi_variable_simulation(data, num_simulations, confidence_level, custom_distribution, correlation_matrix, distribution_params, external_factors)
     
     if isinstance(data, pd.Series):
         data = data.values
@@ -19,9 +19,12 @@ def run_monte_carlo_simulation(data, num_simulations, confidence_level, trend=No
     std = np.std(data)
 
     if custom_distribution:
-        simulated_data = generate_custom_distribution(custom_distribution, mean, std, size=(len(data), num_simulations))
+        simulated_data = generate_custom_distribution(custom_distribution, mean, std, size=(len(data), num_simulations), params=distribution_params)
     else:
         simulated_data = np.random.normal(mean, std, size=(len(data), num_simulations))
+
+    if external_factors:
+        simulated_data = apply_external_factors(simulated_data, external_factors)
 
     simulated_means = np.mean(simulated_data, axis=0)
 
@@ -55,21 +58,31 @@ def apply_seasonality(data, seasonality):
     seasonal_factors = np.tile(seasonality, len(data) // seasons + 1)[:len(data)]
     return data * seasonal_factors
 
-def generate_custom_distribution(distribution, mean, std, size):
+def generate_custom_distribution(distribution, mean, std, size, params=None):
     if distribution == 'normal':
+        if params:
+            return np.random.normal(params.get('loc', mean), params.get('scale', std), size=size)
         return np.random.normal(mean, std, size=size)
     elif distribution == 'lognormal':
-        return np.random.lognormal(mean, std, size=size)
+        if params:
+            return np.random.lognormal(params.get('mean', np.log(mean)), params.get('sigma', std/mean), size=size)
+        return np.random.lognormal(np.log(mean), std/mean, size=size)
     elif distribution == 'uniform':
+        if params:
+            return np.random.uniform(params.get('low', mean - std * np.sqrt(3)), params.get('high', mean + std * np.sqrt(3)), size=size)
         return np.random.uniform(mean - std * np.sqrt(3), mean + std * np.sqrt(3), size=size)
     else:
         raise ValueError("Unsupported distribution type")
 
-def run_multi_variable_simulation(data, num_simulations, confidence_level, custom_distribution=None, correlation_matrix=None):
+def apply_external_factors(simulated_data, external_factors):
+    for factor, impact in external_factors.items():
+        simulated_data *= impact
+    return simulated_data
+
+def run_multi_variable_simulation(data, num_simulations, confidence_level, custom_distribution=None, correlation_matrix=None, distribution_params=None, external_factors=None):
     if correlation_matrix is None:
         correlation_matrix = data.corr()
     else:
-        # Convert correlation_matrix to float64
         correlation_matrix = correlation_matrix.astype(np.float64)
     
     means = data.mean()
@@ -78,7 +91,8 @@ def run_multi_variable_simulation(data, num_simulations, confidence_level, custo
     simulated_data = {}
     for col in data.columns:
         if custom_distribution:
-            simulated_data[col] = generate_custom_distribution(custom_distribution, means[col], stds[col], size=(len(data), num_simulations))
+            col_params = distribution_params.get(col, {}) if distribution_params else None
+            simulated_data[col] = generate_custom_distribution(custom_distribution, means[col], stds[col], size=(len(data), num_simulations), params=col_params)
         else:
             simulated_data[col] = np.random.normal(means[col], stds[col], size=(len(data), num_simulations))
 
@@ -88,6 +102,10 @@ def run_multi_variable_simulation(data, num_simulations, confidence_level, custo
         correlated_data = np.dot(cholesky, np.column_stack([simulated_data[col][:, i] for col in data.columns]).T).T
         for j, col in enumerate(data.columns):
             simulated_data[col][:, i] = correlated_data[:, j]
+
+    if external_factors:
+        for col in simulated_data:
+            simulated_data[col] = apply_external_factors(simulated_data[col], external_factors.get(col, {}))
 
     results = {}
     for col in data.columns:
@@ -102,3 +120,18 @@ def run_multi_variable_simulation(data, num_simulations, confidence_level, custo
         }
 
     return results
+
+def perform_sensitivity_analysis(data, num_simulations, confidence_level, parameters, ranges):
+    base_result = run_monte_carlo_simulation(data, num_simulations, confidence_level)
+    sensitivity_results = {}
+
+    for param, range_values in ranges.items():
+        param_results = []
+        for value in range_values:
+            params = parameters.copy()
+            params[param] = value
+            result = run_monte_carlo_simulation(data, num_simulations, confidence_level, **params)
+            param_results.append((value, result['mean']))
+        sensitivity_results[param] = param_results
+
+    return base_result, sensitivity_results
