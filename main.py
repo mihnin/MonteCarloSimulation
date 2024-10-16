@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
+import requests
 from data_processing import load_data, preprocess_data
 from monte_carlo import run_monte_carlo_simulation, perform_sensitivity_analysis
 from visualization import plot_simulation_results, plot_sensitivity_analysis
@@ -9,32 +10,56 @@ from export_utils import export_results_to_excel
 
 st.set_page_config(page_title="Business Data Analysis", page_icon="assets/favicon.png", layout="wide")
 
+def fetch_api_data(api_url):
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()
+        data = response.json()
+        df = pd.DataFrame(data)
+        return df
+    except requests.RequestException as e:
+        st.error(f"Error fetching data from API: {str(e)}")
+        return None
+
 def main():
     st.title("Business Data Analysis with Monte Carlo Simulation")
 
-    # File upload
-    uploaded_file = st.file_uploader("Upload your Excel or CSV file", type=["xlsx", "xls", "csv"])
+    # Data source selection
+    data_source = st.radio("Select data source", ["Upload File", "API"])
 
     df = None
-    if uploaded_file is not None:
-        try:
-            # Load and preprocess data
-            df = load_data(uploaded_file)
+    if data_source == "Upload File":
+        # File upload
+        uploaded_file = st.file_uploader("Upload your Excel or CSV file", type=["xlsx", "xls", "csv"])
+
+        if uploaded_file is not None:
+            try:
+                # Load and preprocess data
+                df = load_data(uploaded_file)
+                if df is not None:
+                    st.success("Data loaded successfully!")
+                    st.subheader("Data Preview")
+                    st.write(df.head())
+                else:
+                    st.error("Failed to load the uploaded file. Please check the file format and try again.")
+            except Exception as e:
+                st.error(f"An error occurred while loading the file: {str(e)}")
+        else:
+            # Load test data if no file is uploaded
+            try:
+                df = pd.read_csv('test_data.csv')
+                st.info("Using test data. You can upload your own file above.")
+            except Exception as e:
+                st.error(f"Failed to load test data: {str(e)}")
+    else:
+        # API data ingestion
+        api_url = st.text_input("Enter API URL")
+        if api_url:
+            df = fetch_api_data(api_url)
             if df is not None:
-                st.success("Data loaded successfully!")
+                st.success("Data fetched successfully from API!")
                 st.subheader("Data Preview")
                 st.write(df.head())
-            else:
-                st.error("Failed to load the uploaded file. Please check the file format and try again.")
-        except Exception as e:
-            st.error(f"An error occurred while loading the file: {str(e)}")
-    else:
-        # Load test data if no file is uploaded
-        try:
-            df = pd.read_csv('test_data.csv')
-            st.info("Using test data. You can upload your own file above.")
-        except Exception as e:
-            st.error(f"Failed to load test data: {str(e)}")
 
     if df is not None:
         # Preprocess data
@@ -181,7 +206,7 @@ def main():
             )
 
     st.sidebar.title("About")
-    st.sidebar.info("This application performs Monte Carlo simulations on uploaded business data to analyze and visualize potential outcomes.")
+    st.sidebar.info("This application performs Monte Carlo simulations on uploaded business data or data fetched from an API to analyze and visualize potential outcomes.")
 
 if __name__ == "__main__":
     main()
