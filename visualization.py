@@ -3,46 +3,46 @@ import plotly.express as px
 import numpy as np
 import pandas as pd
 
-def plot_simulation_results(simulated_data, ci_lower, ci_upper, target_column, plot_type='histogram'):
-    if plot_type == 'histogram':
+def plot_simulation_results(simulated_data, ci_lower, ci_upper, target_column, plot_type='гистограмма'):
+    if plot_type == 'гистограмма':
         return plot_histogram(simulated_data, ci_lower, ci_upper, target_column)
-    elif plot_type == 'line':
+    elif plot_type == 'линейный':
         return plot_line(simulated_data, ci_lower, ci_upper, target_column)
-    elif plot_type == 'box':
+    elif plot_type == 'ящик с усами':
         return plot_box(simulated_data, ci_lower, ci_upper, target_column)
     else:
-        raise ValueError("Invalid plot type. Choose 'histogram', 'line', or 'box'.")
+        raise ValueError("Неверный тип графика. Выберите 'гистограмма', 'линейный' или 'ящик с усами'.")
 
 def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
-    # Histogram of simulated data
+    # Гистограмма симулированных данных
     fig.add_trace(go.Histogram(
         x=simulated_data,
-        name="Simulation Results",
+        name="Результаты симуляции",
         nbinsx=50,
         hoverinfo='y+text',
-        hovertext=[f'Value: {x:.2f}' for x in simulated_data],
+        hovertext=[f'Значение: {x:.2f}' for x in simulated_data],
         hoverlabel=dict(namelength=-1)
     ))
 
-    # Confidence interval
-    fig.add_vline(x=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Lower CI: {ci_lower:.2f}")
-    fig.add_vline(x=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Upper CI: {ci_upper:.2f}")
+    # Доверительный интервал
+    fig.add_vline(x=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Нижний ДИ: {ci_lower:.2f}")
+    fig.add_vline(x=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Верхний ДИ: {ci_upper:.2f}")
 
-    # Mean line
+    # Линия среднего значения
     mean = np.mean(simulated_data)
-    fig.add_vline(x=mean, line_color="green", annotation_text=f"Mean: {mean:.2f}")
+    fig.add_vline(x=mean, line_color="green", annotation_text=f"Среднее: {mean:.2f}")
 
     fig.update_layout(
-        title=f"Monte Carlo Simulation Results for {target_column} (Histogram)",
+        title=f"Результаты симуляции Монте-Карло для {target_column} (Гистограмма)",
         xaxis_title=target_column,
-        yaxis_title="Frequency",
+        yaxis_title="Частота",
         showlegend=False,
         hovermode='closest'
     )
 
-    # Add range slider and selector
+    # Добавление ползунка диапазона и селектора
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -60,35 +60,35 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
 def plot_line(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
-    # Line plot of simulated data
+    # Линейный график симулированных данных
     x = list(range(len(simulated_data)))
     fig.add_trace(go.Scatter(
         x=x,
         y=simulated_data,
         mode='lines',
-        name="Simulation Results",
+        name="Результаты симуляции",
         hoverinfo='x+y',
-        hovertext=[f'Run: {i+1}<br>Value: {y:.2f}' for i, y in enumerate(simulated_data)],
+        hovertext=[f'Запуск: {i+1}<br>Значение: {y:.2f}' for i, y in enumerate(simulated_data)],
         hoverlabel=dict(namelength=-1)
     ))
 
-    # Confidence interval
-    fig.add_hline(y=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Lower CI: {ci_lower:.2f}")
-    fig.add_hline(y=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Upper CI: {ci_upper:.2f}")
+    # Доверительный интервал
+    fig.add_hline(y=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Нижний ДИ: {ci_lower:.2f}")
+    fig.add_hline(y=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Верхний ДИ: {ci_upper:.2f}")
 
-    # Mean line
+    # Линия среднего значения
     mean = np.mean(simulated_data)
-    fig.add_hline(y=mean, line_color="green", annotation_text=f"Mean: {mean:.2f}")
+    fig.add_hline(y=mean, line_color="green", annotation_text=f"Среднее: {mean:.2f}")
 
     fig.update_layout(
-        title=f"Monte Carlo Simulation Results for {target_column} (Line Plot)",
-        xaxis_title="Simulation Run",
+        title=f"Результаты симуляции Монте-Карло для {target_column} (Линейный график)",
+        xaxis_title="Запуск симуляции",
         yaxis_title=target_column,
         showlegend=True,
         hovermode='closest'
     )
 
-    # Add range slider and selector
+    # Добавление ползунка диапазона и селектора
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -106,28 +106,28 @@ def plot_line(simulated_data, ci_lower, ci_upper, target_column):
 def plot_box(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
-    # Box plot of simulated data
+    # Боксплот симулированных данных
     fig.add_trace(go.Box(
         y=simulated_data,
-        name="Simulation Results",
+        name="Результаты симуляции",
         boxpoints='all',
         jitter=0.3,
         pointpos=-1.8,
         hoverinfo='y',
-        hovertext=[f'Value: {y:.2f}' for y in simulated_data],
+        hovertext=[f'Значение: {y:.2f}' for y in simulated_data],
         hoverlabel=dict(namelength=-1)
     ))
 
-    # Confidence interval
-    fig.add_hline(y=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Lower CI: {ci_lower:.2f}")
-    fig.add_hline(y=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Upper CI: {ci_upper:.2f}")
+    # Доверительный интервал
+    fig.add_hline(y=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Нижний ДИ: {ci_lower:.2f}")
+    fig.add_hline(y=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Верхний ДИ: {ci_upper:.2f}")
 
-    # Mean line
+    # Линия среднего значения
     mean = np.mean(simulated_data)
-    fig.add_hline(y=mean, line_color="green", annotation_text=f"Mean: {mean:.2f}")
+    fig.add_hline(y=mean, line_color="green", annotation_text=f"Среднее: {mean:.2f}")
 
     fig.update_layout(
-        title=f"Monte Carlo Simulation Results for {target_column} (Box Plot)",
+        title=f"Результаты симуляции Монте-Карло для {target_column} (Боксплот)",
         yaxis_title=target_column,
         showlegend=False,
         hovermode='closest'
@@ -146,19 +146,19 @@ def plot_sensitivity_analysis(sensitivity_results):
             mode='lines+markers',
             name=param,
             hoverinfo='x+y+text',
-            hovertext=[f'{param}: {x:.2f}<br>Mean: {y:.2f}' for x, y in results],
+            hovertext=[f'{param}: {x:.2f}<br>Среднее: {y:.2f}' for x, y in results],
             hoverlabel=dict(namelength=-1)
         ))
 
     fig.update_layout(
-        title="Sensitivity Analysis",
-        xaxis_title="Parameter Value",
-        yaxis_title="Simulation Mean",
+        title="Анализ чувствительности",
+        xaxis_title="Значение параметра",
+        yaxis_title="Среднее значение симуляции",
         showlegend=True,
         hovermode='closest'
     )
 
-    # Add range slider and selector
+    # Добавление ползунка диапазона и селектора
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -186,9 +186,9 @@ def plot_correlation_heatmap(correlation_matrix):
     ))
 
     fig.update_layout(
-        title="Correlation Heatmap",
-        xaxis_title="Variables",
-        yaxis_title="Variables",
+        title="Тепловая карта корреляции",
+        xaxis_title="Переменные",
+        yaxis_title="Переменные",
     )
 
     return fig
@@ -210,7 +210,7 @@ def plot_3d_scatter(data, x_col, y_col, z_col):
     )])
 
     fig.update_layout(
-        title=f"3D Scatter Plot: {x_col} vs {y_col} vs {z_col}",
+        title=f"3D Точечный график: {x_col} vs {y_col} vs {z_col}",
         scene=dict(
             xaxis_title=x_col,
             yaxis_title=y_col,

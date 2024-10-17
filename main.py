@@ -10,7 +10,7 @@ from visualization import plot_simulation_results, plot_sensitivity_analysis, pl
 from export_utils import export_results_to_excel
 from database import save_analysis, get_all_analyses, get_analysis
 
-st.set_page_config(page_title="Business Data Analysis", page_icon="assets/favicon.png", layout="wide")
+st.set_page_config(page_title="Анализ бизнес-данных", page_icon="assets/favicon.png", layout="wide")
 
 def fetch_api_data(api_url):
     try:
@@ -20,26 +20,26 @@ def fetch_api_data(api_url):
         df = pd.DataFrame(data)
         return df
     except requests.RequestException as e:
-        st.error(f"Error fetching data from API: {str(e)}")
+        st.error(f"Ошибка при получении данных из API: {str(e)}")
         return None
 
 def plot_scatter_matrix(results):
     df = pd.DataFrame({k: v['simulated_data'] for k, v in results.items()})
-    fig = px.scatter_matrix(df, title="Multi-variable Simulation Results")
+    fig = px.scatter_matrix(df, title="Результаты многомерной симуляции")
     fig.update_traces(diagonal_visible=False)
     return fig
 
 def main():
-    st.title("Business Data Analysis with Monte Carlo Simulation")
+    st.title("Анализ бизнес-данных с помощью симуляции Монте-Карло")
 
-    # Test save and retrieve functionality
-    st.subheader("Test Save and Retrieve Functionality")
-    if st.button("Run Test"):
-        # Save a test analysis
+    # Тест функциональности сохранения и извлечения
+    st.subheader("Тест функциональности сохранения и извлечения")
+    if st.button("Запустить тест"):
+        # Сохранение тестового анализа
         test_config = {
             'data_source': 'test',
             'use_multi_var': False,
-            'target_column': 'Sales',
+            'target_column': 'Продажи',
             'num_simulations': 1000,
             'confidence_level': 95
         }
@@ -51,129 +51,129 @@ def main():
             'ci_upper': 1200,
             'simulated_data': list(np.random.normal(1000, 100, 1000))
         }
-        save_analysis("Test Analysis", test_config, test_results)
-        st.success("Test analysis saved successfully!")
+        save_analysis("Тестовый анализ", test_config, test_results)
+        st.success("Тестовый анализ успешно сохранен!")
 
-        # Retrieve and display the saved analysis
+        # Извлечение и отображение сохраненного анализа
         analyses = get_all_analyses()
         if analyses:
-            test_analysis = get_analysis(analyses[-1][0])  # Get the last saved analysis
-            st.write("Retrieved Test Analysis:")
+            test_analysis = get_analysis(analyses[-1][0])  # Получение последнего сохраненного анализа
+            st.write("Извлеченный тестовый анализ:")
             st.json(test_analysis)
         else:
-            st.error("Failed to retrieve the saved analysis.")
+            st.error("Не удалось извлечь сохраненный анализ.")
 
-    # Sidebar for navigation
-    page = st.sidebar.selectbox("Choose a page", ["Run New Analysis", "View Saved Analyses"])
+    # Боковая панель для навигации
+    page = st.sidebar.selectbox("Выберите страницу", ["Запустить новый анализ", "Просмотреть сохраненные анализы"])
 
-    if page == "Run New Analysis":
+    if page == "Запустить новый анализ":
         run_new_analysis()
     else:
         view_saved_analyses()
 
 def run_new_analysis():
-    # Data source selection
-    data_source = st.radio("Select data source", ["Upload File", "API", "Use Test Data"])
+    # Выбор источника данных
+    data_source = st.radio("Выберите источник данных", ["Загрузить файл", "API", "Использовать тестовые данные"])
 
     df = None
-    if data_source == "Upload File":
-        # File upload
-        uploaded_file = st.file_uploader("Upload your Excel or CSV file", type=["xlsx", "xls", "csv"])
+    if data_source == "Загрузить файл":
+        # Загрузка файла
+        uploaded_file = st.file_uploader("Загрузите ваш файл Excel или CSV", type=["xlsx", "xls", "csv"])
 
         if uploaded_file is not None:
             try:
-                # Load and preprocess data
+                # Загрузка и предобработка данных
                 df = load_data(uploaded_file)
                 if df is not None:
-                    st.success("Data loaded successfully!")
-                    st.subheader("Data Preview")
+                    st.success("Данные успешно загружены!")
+                    st.subheader("Предварительный просмотр данных")
                     st.write(df.head())
                 else:
-                    st.error("Failed to load the uploaded file. Please check the file format and try again.")
+                    st.error("Не удалось загрузить файл. Пожалуйста, проверьте формат файла и попробуйте снова.")
             except ValueError as e:
                 st.error(str(e))
-                st.info("Using test data as a fallback. You can try uploading your file again.")
+                st.info("Используются тестовые данные в качестве резервного варианта. Вы можете попробовать загрузить файл снова.")
                 df = pd.read_csv('test_data.csv', encoding='utf-8-sig')
         else:
-            st.info("No file uploaded. Using test data.")
+            st.info("Файл не загружен. Используются тестовые данные.")
             df = pd.read_csv('test_data.csv', encoding='utf-8-sig')
     elif data_source == "API":
-        # API data ingestion
-        api_url = st.text_input("Enter API URL")
+        # Получение данных из API
+        api_url = st.text_input("Введите URL API")
         if api_url:
             df = fetch_api_data(api_url)
             if df is not None:
-                st.success("Data fetched successfully from API!")
-                st.subheader("Data Preview")
+                st.success("Данные успешно получены из API!")
+                st.subheader("Предварительный просмотр данных")
                 st.write(df.head())
     else:
-        # Use test data
+        # Использование тестовых данных
         try:
             df = pd.read_csv('test_data.csv', encoding='utf-8-sig')
-            st.info("Using test data.")
-            st.subheader("Data Preview")
+            st.info("Используются тестовые данные.")
+            st.subheader("Предварительный просмотр данных")
             st.write(df.head())
         except Exception as e:
-            st.error(f"Failed to load test data: {str(e)}")
+            st.error(f"Не удалось загрузить тестовые данные: {str(e)}")
 
     if df is not None:
         # Preprocess data
         numeric_columns = preprocess_data(df)
 
-        # Monte Carlo simulation configuration
-        st.subheader("Monte Carlo Simulation Configuration")
+        # Настройка симуляции Монте-Карло
+        st.subheader("Настройка симуляции Монте-Карло")
         
-        # Multi-variable simulation option
-        use_multi_var = st.checkbox("Run multi-variable simulation")
+        # Опция многопеременной симуляции
+        use_multi_var = st.checkbox("Запустить многопеременную симуляцию")
         
         if use_multi_var:
-            target_columns = st.multiselect("Select target columns for simulation", numeric_columns, default=numeric_columns)
+            target_columns = st.multiselect("Выберите целевые столбцы для симуляции", numeric_columns, default=numeric_columns)
         else:
-            target_column = st.selectbox("Select target column for simulation", numeric_columns)
+            target_column = st.selectbox("Выберите целевой столбец для симуляции", numeric_columns)
         
-        num_simulations = st.slider("Number of simulations", min_value=100, max_value=10000, value=1000, step=100)
-        confidence_level = st.slider("Confidence level (%)", min_value=80, max_value=99, value=95, step=1)
+        num_simulations = st.slider("Количество симуляций", min_value=100, max_value=10000, value=1000, step=100)
+        confidence_level = st.slider("Уровень доверия (%)", min_value=80, max_value=99, value=95, step=1)
 
-        # Advanced options
-        st.subheader("Advanced Options")
-        use_trend = st.checkbox("Apply trend analysis")
+        # Расширенные настройки
+        st.subheader("Расширенные настройки")
+        use_trend = st.checkbox("Применить анализ тренда")
         trend_type = None
         if use_trend:
             trend_type = st.selectbox("Select trend type", ["linear", "exponential"])
 
-        use_seasonality = st.checkbox("Apply seasonal adjustments")
+        use_seasonality = st.checkbox("Применить сезонные корректировки")
         seasonality = None
         if use_seasonality:
-            seasons = st.number_input("Number of seasons", min_value=2, max_value=12, value=4)
-            seasonality = [st.number_input(f"Season {i+1} factor", min_value=0.1, max_value=2.0, value=1.0, step=0.1) for i in range(seasons)]
+            seasons = st.number_input("Количество сезонов", min_value=2, max_value=12, value=4)
+            seasonality = [st.number_input(f"Фактор сезона {i+1}", min_value=0.1, max_value=2.0, value=1.0, step=0.1) for i in range(seasons)]
 
         # Custom distribution selection
-        custom_distribution = st.selectbox("Select distribution", ["normal", "lognormal", "uniform"])
+        custom_distribution = st.selectbox("Выберите р��р��деление", ["нормальное", "логнормальное", "равномерное"])
         
         # Distribution parameters
-        st.subheader("Distribution Parameters")
-        if custom_distribution == "normal":
-            loc = st.number_input("Location (mean)", value=0.0)
-            scale = st.number_input("Scale (standard deviation)", value=1.0, min_value=0.1)
+        st.subheader("Параметры распределения")
+        if custom_distribution == "нормальное":
+            loc = st.number_input("Расположение (среднее)", value=0.0)
+            scale = st.number_input("Масштаб (стандартное отклонение)", value=1.0, min_value=0.1)
             distribution_params = {"loc": loc, "scale": scale}
-        elif custom_distribution == "lognormal":
-            mean = st.number_input("Mean of log", value=0.0)
-            sigma = st.number_input("Standard deviation of log", value=1.0, min_value=0.1)
+        elif custom_distribution == "логнормальное":
+            mean = st.number_input("Среднее логарифма", value=0.0)
+            sigma = st.number_input("Стандартное отклонение логарифма", value=1.0, min_value=0.1)
             distribution_params = {"mean": mean, "sigma": sigma}
-        else:  # uniform
-            low = st.number_input("Lower bound", value=0.0)
-            high = st.number_input("Upper bound", value=1.0)
+        else:  # равномерное
+            low = st.number_input("Нижняя граница", value=0.0)
+            high = st.number_input("Верхняя граница", value=1.0)
             distribution_params = {"low": low, "high": high}
 
-        # External factors
-        st.subheader("External Factors")
-        use_external_factors = st.checkbox("Apply external factors")
+        # Внешние факторы
+        st.subheader("Внешние факторы")
+        use_external_factors = st.checkbox("Применить внешние факторы")
         external_factors = {}
         if use_external_factors:
-            num_factors = st.number_input("Number of external factors", min_value=1, max_value=5, value=1)
+            num_factors = st.number_input("Количество внешних факторов", min_value=1, max_value=5, value=1)
             for i in range(num_factors):
-                factor_name = st.text_input(f"Factor {i+1} name", value=f"Factor {i+1}")
-                factor_impact = st.slider(f"Factor {i+1} impact", min_value=0.5, max_value=1.5, value=1.0, step=0.1)
+                factor_name = st.text_input(f"Название фактора {i+1}", value=f"Фактор {i+1}")
+                factor_impact = st.slider(f"Влияние фактора {i+1}", min_value=0.5, max_value=1.5, value=1.0, step=0.1)
                 external_factors[factor_name] = factor_impact
 
         # Correlation matrix
@@ -191,76 +191,76 @@ def run_new_analysis():
                             correlation_matrix.loc[col2, col1] = correlation
             st.write(correlation_matrix)
 
-        # Sensitivity analysis
-        st.subheader("Sensitivity Analysis")
-        run_sensitivity = st.checkbox("Run sensitivity analysis")
+        # Анализ чувствительност��
+        st.subheader("Анализ чувствительности")
+        run_sensitivity = st.checkbox("Запустить анализ чувствительности")
         sensitivity_params = {}
         if run_sensitivity:
-            num_params = st.number_input("Number of parameters for sensitivity analysis", min_value=1, max_value=5, value=1)
+            num_params = st.number_input("Количество параметров для анализа чувствительности", min_value=1, max_value=5, value=1)
             for i in range(num_params):
-                param_name = st.text_input(f"Parameter {i+1} name", value=f"Param {i+1}")
-                param_min = st.number_input(f"{param_name} minimum value", value=0.5)
-                param_max = st.number_input(f"{param_name} maximum value", value=1.5)
-                param_steps = st.number_input(f"{param_name} number of steps", min_value=2, max_value=10, value=5)
+                param_name = st.text_input(f"Название параметра {i+1}", value=f"Параметр {i+1}")
+                param_min = st.number_input(f"Минимальное значение {param_name}", value=0.5)
+                param_max = st.number_input(f"Максимальное значение {param_name}", value=1.5)
+                param_steps = st.number_input(f"Количество шагов для {param_name}", min_value=2, max_value=10, value=5)
                 sensitivity_params[param_name] = np.linspace(param_min, param_max, param_steps)
 
-        # Graph type selection
-        graph_type = st.selectbox("Select graph type", ["histogram", "line", "box"])
+        # Выбор типа графика
+        graph_type = st.selectbox("Выберите тип графика", ["гистограмма", "линейный", "ящик с усами"])
 
-        if st.button("Run Simulation"):
-            # Run Monte Carlo simulation
+        if st.button("Запустить симуляцию"):
+            # Запуск с��муляции Монте-Карло
             if use_multi_var:
                 results = run_monte_carlo_simulation(df[target_columns], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, multi_var=True, custom_distribution=custom_distribution, correlation_matrix=correlation_matrix, distribution_params=distribution_params, external_factors=external_factors)
             else:
                 results = run_monte_carlo_simulation(df[target_column], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, custom_distribution=custom_distribution, distribution_params=distribution_params, external_factors=external_factors)
 
-            # Display results
-            st.subheader("Simulation Results")
+            # Отображение результатов
+            st.subheader("Результаты симуляции")
             if use_multi_var:
                 for col, col_results in results.items():
-                    st.write(f"Results for {col}:")
-                    st.write(f"Mean: {col_results['mean']:.2f}")
-                    st.write(f"Median: {col_results['median']:.2f}")
-                    st.write(f"Standard Deviation: {col_results['std']:.2f}")
-                    st.write(f"{confidence_level}% Confidence Interval: ({col_results['ci_lower']:.2f}, {col_results['ci_upper']:.2f})")
+                    st.write(f"Результаты для {col}:")
+                    st.write(f"Среднее: {col_results['mean']:.2f}")
+                    st.write(f"Медиана: {col_results['median']:.2f}")
+                    st.write(f"Стандартное отклонение: {col_results['std']:.2f}")
+                    st.write(f"{confidence_level}% оверительный интервал: ({col_results['ci_lower']:.2f}, {col_results['ci_upper']:.2f})")
                     
-                    # Visualize results
+                    # Визуализация результатов
                     fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type=graph_type)
                     st.plotly_chart(fig, use_container_width=True)
 
-                # Add scatter matrix plot for multi-variable simulations
-                st.subheader("Multi-variable Simulation Scatter Matrix")
+                # Добавление матрицы рассеяния для многопеременных симуляций
+                st.subheader("Матрица рассеяния многопеременной симуляции")
                 scatter_matrix_fig = plot_scatter_matrix(results)
                 st.plotly_chart(scatter_matrix_fig, use_container_width=True)
 
-                # Add correlation heatmap
-                st.subheader("Correlation Heatmap")
+                # Добавление тепловой карты корреляции
+                st.subheader("Тепловая карта корреляции")
                 heatmap_fig = plot_correlation_heatmap(correlation_matrix)
                 st.plotly_chart(heatmap_fig, use_container_width=True)
 
-                # Add 3D scatter plot if there are at least 3 variables
+                # Добавление 3D графика рассеяния, если есть по крайней мере 3 переменных
                 if len(target_columns) >= 3:
-                    st.subheader("3D Scatter Plot")
-                    x_col = st.selectbox("Select X-axis variable", target_columns)
-                    y_col = st.selectbox("Select Y-axis variable", [col for col in target_columns if col != x_col])
-                    z_col = st.selectbox("Select Z-axis variable", [col for col in target_columns if col not in [x_col, y_col]])
+                    st.subheader("3D график рассеяния")
+                    x_col = st.selectbox("Выберите переменную для оси X", target_columns)
+                    y_col = st.selectbox("Выберите переменную для оси Y", [col for col in target_columns if col != x_col])
+                    z_col = st.selectbox("Выберите переменную для оси Z", [col for col in target_columns if col not in [x_col, y_col]])
                     
                     scatter_3d_data = pd.DataFrame({col: results[col]['simulated_data'] for col in [x_col, y_col, z_col]})
                     scatter_3d_fig = plot_3d_scatter(scatter_3d_data, x_col, y_col, z_col)
                     st.plotly_chart(scatter_3d_fig, use_container_width=True)
             else:
-                st.write(f"Mean: {results['mean']:.2f}")
-                st.write(f"Median: {results['median']:.2f}")
-                st.write(f"Standard Deviation: {results['std']:.2f}")
-                st.write(f"{confidence_level}% Confidence Interval: ({results['ci_lower']:.2f}, {results['ci_upper']:.2f})")
+                st.write(f"Среднее: {results['mean']:.2f}")
+                st.write(f"Медиана: {results['median']:.2f}")
+                st.write(f"Стандартное отклонение: {results['std']:.2f}")
+                st.write(f"{confidence_level}% Доверительный интервал: ({results['ci_lower']:.2f}, {results['ci_upper']:.2f})")
 
-                # Visualize results
+                # Визуализация результатов
                 fig = plot_simulation_results(results['simulated_data'], results['ci_lower'], results['ci_upper'], target_column, plot_type=graph_type)
                 st.plotly_chart(fig, use_container_width=True)
 
-            # Run sensitivity analysis if selected
+            # Запуск анализа чувствительности, если выбран
             if run_sensitivity:
-                st.subheader("Sensitivity Analysis Results")
+                st.subheader("Результаты анализа чувствительности")
                 base_params = {
                     'trend': trend_type,
                     'seasonality': seasonality,
@@ -280,10 +280,10 @@ def run_new_analysis():
                 fig_sensitivity = plot_sensitivity_analysis(sensitivity_results)
                 st.plotly_chart(fig_sensitivity, use_container_width=True)
 
-            # Save analysis option
-            st.subheader("Save Analysis")
-            analysis_name = st.text_input("Enter a name for this analysis")
-            if st.button("Save Analysis"):
+            # Сохранение анализа
+            st.subheader("Сохранить ализ")
+            analysis_name = st.text_input("Введите название для этого анализа")
+            if st.button("Сохранить анализ"):
                 if analysis_name:
                     config = {
                         'data_source': data_source,
@@ -299,16 +299,16 @@ def run_new_analysis():
                         'sensitivity_params': sensitivity_params
                     }
                     save_analysis(analysis_name, config, results)
-                    st.success(f"Analysis '{analysis_name}' saved successfully!")
+                    st.success(f"Анализ '{analysis_name}' успешно сохранен!")
                 else:
-                    st.warning("Please enter a name for the analysis before saving.")
+                    st.warning("Пожалуйста, введите название для анализа перед сохранением.")
 
-            # Export results button
+            # Экспорт результатов
             excel_file = export_results_to_excel(results)
             st.download_button(
-                label="Export Results to Excel",
+                label="Экспортировать результаты в Excel",
                 data=excel_file,
-                file_name="simulation_results.xlsx",
+                file_name="результаты_симуляции.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
@@ -327,15 +327,15 @@ def view_saved_analyses():
                 st.subheader("Results")
                 st.json(analysis['results'])
 
-                # Visualize results
+                # Визуализация результатов
                 if analysis['config']['use_multi_var']:
                     for col, col_results in analysis['results'].items():
                         st.write(f"Results for {col}:")
-                        fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type='histogram')
+                        fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type='гистограмма')
                         st.plotly_chart(fig, use_container_width=True)
                 else:
                     target_column = analysis['config']['target_column']
-                    fig = plot_simulation_results(analysis['results']['simulated_data'], analysis['results']['ci_lower'], analysis['results']['ci_upper'], target_column, plot_type='histogram')
+                    fig = plot_simulation_results(analysis['results']['simulated_data'], analysis['results']['ci_lower'], analysis['results']['ci_upper'], target_column, plot_type='гистограмма')
                     st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No saved analyses found.")

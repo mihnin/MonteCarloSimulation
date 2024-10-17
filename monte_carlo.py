@@ -58,20 +58,20 @@ def apply_seasonality(data, seasonality):
     return data * seasonal_factors
 
 def generate_custom_distribution(distribution, mean, std, size, params=None):
-    if distribution == 'normal':
+    if distribution == 'нормальное':
         if params:
             return np.random.normal(params.get('loc', mean), params.get('scale', std), size=size)
         return np.random.normal(mean, std, size=size)
-    elif distribution == 'lognormal':
+    elif distribution == 'логнормальное':
         if params:
             return np.random.lognormal(params.get('mean', np.log(mean)), params.get('sigma', std/mean), size=size)
         return np.random.lognormal(np.log(mean), std/mean, size=size)
-    elif distribution == 'uniform':
+    elif distribution == 'равномерное':
         if params:
             return np.random.uniform(params.get('low', mean - std * np.sqrt(3)), params.get('high', mean + std * np.sqrt(3)), size=size)
         return np.random.uniform(mean - std * np.sqrt(3), mean + std * np.sqrt(3), size=size)
     else:
-        raise ValueError("Unsupported distribution type")
+        raise ValueError("Неподдерживаемый тип распределения")
 
 def apply_external_factors(simulated_data, external_factors):
     for factor, impact in external_factors.items():

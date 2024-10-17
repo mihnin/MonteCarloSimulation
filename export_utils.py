@@ -5,15 +5,15 @@ def export_results_to_excel(results):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         if isinstance(results, dict) and 'simulated_data' in results:
-            # Single variable simulation
+            # Симуляция одной переменной
             df = pd.DataFrame({
-                'Simulated Data': results['simulated_data']
+                'Симулированные данные': results['simulated_data']
             })
-            df.to_excel(writer, sheet_name='Simulation Results', index=False)
+            df.to_excel(writer, sheet_name='Результаты симуляции', index=False)
             
             stats_df = pd.DataFrame({
-                'Statistic': ['Mean', 'Median', 'Standard Deviation', 'CI Lower', 'CI Upper'],
-                'Value': [
+                'Статистика': ['Среднее', 'Медиана', 'Стандартное отклонение', 'Нижний ДИ', 'Верхний ДИ'],
+                'Значение': [
                     results['mean'],
                     results['median'],
                     results['std'],
@@ -21,19 +21,19 @@ def export_results_to_excel(results):
                     results['ci_upper']
                 ]
             })
-            stats_df.to_excel(writer, sheet_name='Statistics', index=False)
+            stats_df.to_excel(writer, sheet_name='Статистика', index=False)
         
         elif isinstance(results, dict) and all(isinstance(v, dict) for v in results.values()):
-            # Multi-variable simulation
+            # Симуляция нескольких переменных
             for variable, var_results in results.items():
                 df = pd.DataFrame({
-                    'Simulated Data': var_results['simulated_data']
+                    'Симулированные данные': var_results['simulated_data']
                 })
-                df.to_excel(writer, sheet_name=f'{variable} Results', index=False)
+                df.to_excel(writer, sheet_name=f'Результаты {variable}', index=False)
                 
                 stats_df = pd.DataFrame({
-                    'Statistic': ['Mean', 'Median', 'Standard Deviation', 'CI Lower', 'CI Upper'],
-                    'Value': [
+                    'Статистика': ['Среднее', 'Медиана', 'Стандартное отклонение', 'Нижний ДИ', 'Верхний ДИ'],
+                    'Значение': [
                         var_results['mean'],
                         var_results['median'],
                         var_results['std'],
@@ -41,10 +41,10 @@ def export_results_to_excel(results):
                         var_results['ci_upper']
                     ]
                 })
-                stats_df.to_excel(writer, sheet_name=f'{variable} Statistics', index=False)
+                stats_df.to_excel(writer, sheet_name=f'Статистика {variable}', index=False)
         
         else:
-            raise ValueError("Invalid results format")
+            raise ValueError("Неверный формат результатов")
 
     output.seek(0)
     return output
