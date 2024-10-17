@@ -1,9 +1,12 @@
+# main.py
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 import requests
+import webbrowser  # Импортируем модуль webbrowser
 from data_processing import load_data, preprocess_data
 from monte_carlo import run_monte_carlo_simulation, perform_sensitivity_analysis
 from visualization import plot_simulation_results, plot_sensitivity_analysis, plot_correlation_heatmap, plot_3d_scatter
@@ -65,6 +68,10 @@ def main():
 
     # Боковая панель для навигации
     page = st.sidebar.selectbox("Выберите страницу", ["Запустить новый анализ", "Просмотреть сохраненные анализы"])
+
+    # Добавление ссылки на документацию
+    if st.sidebar.button("Открыть документацию"):
+        webbrowser.open_new_tab('documentation.html')
 
     if page == "Запустить новый анализ":
         run_new_analysis()
@@ -340,8 +347,8 @@ def view_saved_analyses():
     else:
         st.info("No saved analyses found.")
 
-    st.sidebar.title("About")
-    st.sidebar.info("This application performs Monte Carlo simulations on uploaded business data or data fetched from an API to analyze and visualize potential outcomes.")
+    st.sidebar.title("О программе")
+    st.sidebar.info("Это приложение выполняет симуляции Монте-Карло на загруженных бизнес-данных или данных, полученных из API, для анализа и визуализации возможных исходов.")
 
 if __name__ == "__main__":
     main()
