@@ -148,7 +148,7 @@ def run_new_analysis():
             seasonality = [st.number_input(f"Фактор сезона {i+1}", min_value=0.1, max_value=2.0, value=1.0, step=0.1) for i in range(seasons)]
 
         # Custom distribution selection
-        custom_distribution = st.selectbox("Выберите р��р��деление", ["нормальное", "логнормальное", "равномерное"])
+        custom_distribution = st.selectbox("Выберите распределение", ["нормальное", "логнормальное", "равномерное"])
         
         # Distribution parameters
         st.subheader("Параметры распределения")
@@ -191,7 +191,7 @@ def run_new_analysis():
                             correlation_matrix.loc[col2, col1] = correlation
             st.write(correlation_matrix)
 
-        # Анализ чувствительност��
+        # Анализ чувствительност
         st.subheader("Анализ чувствительности")
         run_sensitivity = st.checkbox("Запустить анализ чувствительности")
         sensitivity_params = {}
@@ -208,7 +208,7 @@ def run_new_analysis():
         graph_type = st.selectbox("Выберите тип графика", ["гистограмма", "линейный", "ящик с усами"])
 
         if st.button("Запустить симуляцию"):
-            # Запуск с��муляции Монте-Карло
+            # Запуск смуляции Монте-Карло
             if use_multi_var:
                 results = run_monte_carlo_simulation(df[target_columns], num_simulations, confidence_level, trend=trend_type, seasonality=seasonality, multi_var=True, custom_distribution=custom_distribution, correlation_matrix=correlation_matrix, distribution_params=distribution_params, external_factors=external_factors)
             else:
