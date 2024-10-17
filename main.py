@@ -186,7 +186,7 @@ def run_new_analysis():
                         if i == j:
                             correlation_matrix.loc[col1, col2] = 1.0
                         else:
-                            correlation = st.number_input(f"Correlation between {col1} and {col2}", min_value=-1.0, max_value=1.0, value=0.0, step=0.1)
+                            correlation = st.number_input(f"Корреляция между {col1} и {col2}", min_value=-1.0, max_value=1.0, value=0.0, step=0.1)
                             correlation_matrix.loc[col1, col2] = correlation
                             correlation_matrix.loc[col2, col1] = correlation
             st.write(correlation_matrix)
@@ -222,7 +222,7 @@ def run_new_analysis():
                     st.write(f"Среднее: {col_results['mean']:.2f}")
                     st.write(f"Медиана: {col_results['median']:.2f}")
                     st.write(f"Стандартное отклонение: {col_results['std']:.2f}")
-                    st.write(f"{confidence_level}% оверительный интервал: ({col_results['ci_lower']:.2f}, {col_results['ci_upper']:.2f})")
+                    st.write(f"{confidence_level}% доверительный интервал: ({col_results['ci_lower']:.2f}, {col_results['ci_upper']:.2f})")
                     
                     # Визуализация результатов
                     fig = plot_simulation_results(col_results['simulated_data'], col_results['ci_lower'], col_results['ci_upper'], col, plot_type=graph_type)
@@ -252,7 +252,7 @@ def run_new_analysis():
                 st.write(f"Среднее: {results['mean']:.2f}")
                 st.write(f"Медиана: {results['median']:.2f}")
                 st.write(f"Стандартное отклонение: {results['std']:.2f}")
-                st.write(f"{confidence_level}% Доверительный интервал: ({results['ci_lower']:.2f}, {results['ci_upper']:.2f})")
+                st.write(f"{confidence_level}% доверительный интервал: ({results['ci_lower']:.2f}, {results['ci_upper']:.2f})")
 
                 # Визуализация результатов
                 fig = plot_simulation_results(results['simulated_data'], results['ci_lower'], results['ci_upper'], target_column, plot_type=graph_type)
@@ -281,7 +281,7 @@ def run_new_analysis():
                 st.plotly_chart(fig_sensitivity, use_container_width=True)
 
             # Сохранение анализа
-            st.subheader("Сохранить ализ")
+            st.subheader("Сохранить анализ")
             analysis_name = st.text_input("Введите название для этого анализа")
             if st.button("Сохранить анализ"):
                 if analysis_name:

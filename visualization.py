@@ -1,7 +1,8 @@
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
-import pandas as pd
+##import pandas as pd
+import streamlit as st
 
 def plot_simulation_results(simulated_data, ci_lower, ci_upper, target_column, plot_type='гистограмма'):
     if plot_type == 'гистограмма':
@@ -16,7 +17,6 @@ def plot_simulation_results(simulated_data, ci_lower, ci_upper, target_column, p
 def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
-    # Гистограмма симулированных данных
     fig.add_trace(go.Histogram(
         x=simulated_data,
         name="Результаты симуляции",
@@ -26,11 +26,9 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
         hoverlabel=dict(namelength=-1)
     ))
 
-    # Доверительный интервал
     fig.add_vline(x=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Нижний ДИ: {ci_lower:.2f}")
     fig.add_vline(x=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Верхний ДИ: {ci_upper:.2f}")
 
-    # Линия среднего значения
     mean = np.mean(simulated_data)
     fig.add_vline(x=mean, line_color="green", annotation_text=f"Среднее: {mean:.2f}")
 
@@ -42,7 +40,6 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
         hovermode='closest'
     )
 
-    # Добавление ползунка диапазона и селектора
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -60,7 +57,6 @@ def plot_histogram(simulated_data, ci_lower, ci_upper, target_column):
 def plot_line(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
-    # Линейный график симулированных данных
     x = list(range(len(simulated_data)))
     fig.add_trace(go.Scatter(
         x=x,
@@ -72,11 +68,9 @@ def plot_line(simulated_data, ci_lower, ci_upper, target_column):
         hoverlabel=dict(namelength=-1)
     ))
 
-    # Доверительный интервал
     fig.add_hline(y=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Нижний ДИ: {ci_lower:.2f}")
     fig.add_hline(y=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Верхний ДИ: {ci_upper:.2f}")
 
-    # Линия среднего значения
     mean = np.mean(simulated_data)
     fig.add_hline(y=mean, line_color="green", annotation_text=f"Среднее: {mean:.2f}")
 
@@ -88,7 +82,6 @@ def plot_line(simulated_data, ci_lower, ci_upper, target_column):
         hovermode='closest'
     )
 
-    # Добавление ползунка диапазона и селектора
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -106,7 +99,6 @@ def plot_line(simulated_data, ci_lower, ci_upper, target_column):
 def plot_box(simulated_data, ci_lower, ci_upper, target_column):
     fig = go.Figure()
 
-    # Боксплот симулированных данных
     fig.add_trace(go.Box(
         y=simulated_data,
         name="Результаты симуляции",
@@ -118,11 +110,9 @@ def plot_box(simulated_data, ci_lower, ci_upper, target_column):
         hoverlabel=dict(namelength=-1)
     ))
 
-    # Доверительный интервал
     fig.add_hline(y=ci_lower, line_dash="dash", line_color="red", annotation_text=f"Нижний ДИ: {ci_lower:.2f}")
     fig.add_hline(y=ci_upper, line_dash="dash", line_color="red", annotation_text=f"Верхний ДИ: {ci_upper:.2f}")
 
-    # Линия среднего значения
     mean = np.mean(simulated_data)
     fig.add_hline(y=mean, line_color="green", annotation_text=f"Среднее: {mean:.2f}")
 
@@ -158,7 +148,6 @@ def plot_sensitivity_analysis(sensitivity_results):
         hovermode='closest'
     )
 
-    # Добавление ползунка диапазона и селектора
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -173,7 +162,8 @@ def plot_sensitivity_analysis(sensitivity_results):
 
     return fig
 
-def plot_correlation_heatmap(correlation_matrix):
+@st.cache_data
+def create_correlation_heatmap(correlation_matrix):
     fig = go.Figure(data=go.Heatmap(
         z=correlation_matrix.values,
         x=correlation_matrix.columns,
@@ -186,11 +176,17 @@ def plot_correlation_heatmap(correlation_matrix):
     ))
 
     fig.update_layout(
-        title="Тепловая карта корреляции",
+        title="Тепловая карта корреляций",
         xaxis_title="Переменные",
         yaxis_title="Переменные",
+        height=600,
+        width=800
     )
 
+    return fig
+
+def plot_correlation_heatmap(correlation_matrix):
+    fig = create_correlation_heatmap(correlation_matrix)
     return fig
 
 def plot_3d_scatter(data, x_col, y_col, z_col):

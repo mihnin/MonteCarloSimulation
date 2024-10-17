@@ -47,7 +47,8 @@ def apply_trend(data, trend):
         return data + trend_line
     elif trend == 'exponential':
         _, intercept, _, _, _ = stats.linregress(x, np.log(data))
-        trend_line = np.exp(intercept) * np.exp(0.1 * x)  # Assuming 10% growth rate
+        growth_rate = 0.1  # This value can be made a parameter of the function or obtained from user input
+        trend_line = np.exp(intercept) * np.exp(growth_rate * x)
         return data * trend_line
     else:
         return data
@@ -96,7 +97,12 @@ def run_multi_variable_simulation(data, num_simulations, confidence_level, custo
             simulated_data[col] = np.random.normal(means[col], stds[col], size=(len(data), num_simulations))
 
     # Apply correlations
-    cholesky = np.linalg.cholesky(correlation_matrix)
+    try:
+        cholesky = np.linalg.cholesky(correlation_matrix)
+    except np.linalg.LinAlgError:
+        st.warning("Матрица корреляции не является положительно определенной. Используется диагональная матрица.")
+        cholesky = np.diag(np.sqrt(np.diag(correlation_matrix)))
+
     for i in range(num_simulations):
         correlated_data = np.dot(cholesky, np.column_stack([simulated_data[col][:, i] for col in data.columns]).T).T
         for j, col in enumerate(data.columns):
